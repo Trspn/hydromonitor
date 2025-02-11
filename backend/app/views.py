@@ -28,12 +28,18 @@ from math import floor
 @app.route('/api/climo/get/<start>/<end>', methods=['GET']) 
 def get_all(start,end):   
     '''RETURNS ALL THE DATA FROM THE DATABASE THAT EXIST IN BETWEEN THE START AND END TIMESTAMPS'''
-   
     if request.method == "GET":
-        '''Add your code here to complete this route'''
-
+        try:
+            data = mongo.getAllInRange(start, end)
+            '''Add your code here to complete this route'''
+            if data:
+                return jsonify({"status": "success", "data": data })
+        except Exception as e:
+            print(f"get_all error: f{str(e)}")       
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
+   
+    
    
 
 
@@ -42,8 +48,13 @@ def get_temperature_mmar(start,end):
     '''RETURNS MIN, MAX, AVG AND RANGE FOR TEMPERATURE. THAT FALLS WITHIN THE START AND END DATE RANGE'''
    
     if request.method == "GET": 
-        '''Add your code here to complete this route'''
-
+        try:
+            data = mongo.temperatureMMAR(start, end)  
+            if data:
+                return jsonify({"status": "success", "data": data})
+            '''Add your code here to complete this route'''
+        except Exception as e:
+            print(f"get_temperature_mmar error: {str(e)}")
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
 
@@ -57,6 +68,13 @@ def get_humidity_mmar(start,end):
    
     if request.method == "GET": 
         '''Add your code here to complete this route'''
+        try:
+            data = mongo.humidityMMAR(start, end) 
+            if data:
+                return jsonify({"status": "success", "data": data})
+            '''Add your code here to complete this route'''
+        except Exception as e:
+            print(f"get_humidity_mmar error: {str(e)}")
 
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
@@ -70,8 +88,15 @@ def get_freq_distro(variable,start,end):
     '''RETURNS FREQUENCY DISTRIBUTION FOR SPECIFIED VARIABLE'''
    
     if request.method == "GET": 
-        '''Add your code here to complete this route'''         
+        '''Add your code here to complete this route''' 
+        try:
+            data = mongo.frequencyDistro(variable, int(start), int(end))  # Convert timestamps to integers
 
+            if data:
+                return jsonify({"status": "success", "data": data}) 
+        except Exception as e:
+            print(f"get_freq_distro error: {str(e)}")  
+            return jsonify({"status": "error", "message": str(e)})        
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
 
@@ -83,6 +108,12 @@ def get_images(filename):
    
     if request.method == "GET":
         '''Add your code here to complete this route'''
+        directory   = join( getcwd(), Config.UPLOADS_FOLDER) 
+        filePath    = join( getcwd(), Config.UPLOADS_FOLDER, filename) 
+
+        # RETURN FILE IF IT EXISTS IN FOLDER
+        if exists(filePath):        
+            return send_from_directory(directory, filename)
         
         # FILE DOES NOT EXIST
         return jsonify({"status":"file not found"}), 404

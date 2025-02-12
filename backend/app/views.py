@@ -30,10 +30,12 @@ def get_all(start,end):
     '''RETURNS ALL THE DATA FROM THE DATABASE THAT EXIST IN BETWEEN THE START AND END TIMESTAMPS'''
     if request.method == "GET":
         try:
-            data = mongo.getAllInRange(start, end)
+            Start = escape(start)
+            End = escape(end)
+            data = mongo.getAllInRange(Start, End)
             '''Add your code here to complete this route'''
             if data:
-                return jsonify({"status": "success", "data": data })
+                return jsonify({"status": "found", "data": data })
         except Exception as e:
             print(f"get_all error: f{str(e)}")       
     # FILE DATA NOT EXIST
@@ -49,10 +51,15 @@ def get_temperature_mmar(start,end):
    
     if request.method == "GET": 
         try:
-            data = mongo.temperatureMMAR(start, end)  
+            Start = escape(start)
+            End = escape(end)
+            data = mongo.temperatureMMAR(Start, End)  
+            print("Query Result:", data)
             if data:
-                return jsonify({"status": "success", "data": data})
-            '''Add your code here to complete this route'''
+                return jsonify({"status": "found", "data": data})
+            else:
+                return jsonify({"status": "not found", "message": "No data found for the given date range."})
+                '''Add your code here to complete this route'''
         except Exception as e:
             print(f"get_temperature_mmar error: {str(e)}")
     # FILE DATA NOT EXIST
@@ -69,9 +76,12 @@ def get_humidity_mmar(start,end):
     if request.method == "GET": 
         '''Add your code here to complete this route'''
         try:
-            data = mongo.humidityMMAR(start, end) 
+            Start = escape(start)
+            End = escape(end)
+            data = mongo.humidityMMAR(Start, End) 
+            print("Query Result:", data)
             if data:
-                return jsonify({"status": "success", "data": data})
+                return jsonify({"status": "found", "data": data})
             '''Add your code here to complete this route'''
         except Exception as e:
             print(f"get_humidity_mmar error: {str(e)}")
@@ -90,10 +100,13 @@ def get_freq_distro(variable,start,end):
     if request.method == "GET": 
         '''Add your code here to complete this route''' 
         try:
-            data = mongo.frequencyDistro(variable, int(start), int(end))  # Convert timestamps to integers
+            Start = escape(start)
+            End = escape(end)
+            Variable = escape(variable)
+            data = mongo.frequencyDistro(Variable, int(Start), int(End))  # Convert timestamps to integers
 
             if data:
-                return jsonify({"status": "success", "data": data}) 
+                return jsonify({"status": "found", "data": data}) 
         except Exception as e:
             print(f"get_freq_distro error: {str(e)}")  
             return jsonify({"status": "error", "message": str(e)})        

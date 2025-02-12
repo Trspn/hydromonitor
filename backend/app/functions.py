@@ -70,20 +70,20 @@ class DB:
         '''RETURNS A LIST OF OBJECTS. THAT FALLS WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.climo.find({ "timestamp": { "$gte": start, "$lte": end } },  { "_id": 0 } ).sort("timestamp", 1))
+            result      = list(remotedb.ELET2415.climo.find({ "timestamp": { "$gte": int(start), "$lte": int(end) } },  { "_id": 0 } ).sort("timestamp", 1))
         except Exception as e:
             msg = str(e)
             print("getAllInRange error ",msg)            
         else:                  
             return result
         
-
+        
     def humidityMMAR(self,start, end):
         '''RETURNS MIN, MAX, AVG AND RANGE FOR HUMIDITY. THAT FALLS WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
             pipeline = [
-            { "$match": { "timestamp": { "$gte": start, "$lte": end } } },  
+            { "$match": { "timestamp": { "$gte": int(start), "$lte": int(end) } } },  
             { "$group": {"_id": None, "humidity": { "$push": "$$ROOT.humidity" }}},
             { "$project": {"_id": 0,"max": { "$max": "$humidity" },"min": { "$min": "$humidity" },"avg": { "$avg": "$humidity" }, "range": { "$subtract": [ { "$max": "$humidity" }, { "$min":"$humidity" } ] }}}]
             result      = list(remotedb.ELET2415.climo.aggregate(pipeline))
@@ -98,7 +98,7 @@ class DB:
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
             pipeline = [
-            { "$match": { "timestamp": { "$gte": start, "$lte": end } } },  
+            { "$match": { "timestamp": { "$gte": int(start), "$lte": int(end) } } },  
             { "$group": {"_id": None, "temperature": { "$push": "$$ROOT.temperature" }}},
             { "$project": {"_id": 0,"max": { "$max": "$temperature" },"min": { "$min": "$temperature" },"avg": { "$avg": "$temperature" }, "range": { "$subtract": [ { "$max": "$temperature" }, { "$min":"$temperature" } ] }}}]
             result      = list(remotedb.ELET2415.climo.aggregate(pipeline))
@@ -113,7 +113,7 @@ class DB:
         '''RETURNS THE FREQUENCY DISTROBUTION FOR A SPECIFIED VARIABLE WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            pipeline = [{ "$match": { "timestamp": { "$gte": start, "$lte": end } } },  { "$bucket": {"groupBy": f"${variable}", "boundaries": list(range(0, 101)),  "default": "outliers",  "output": { "count": { "$sum": 1 } }}}]
+            pipeline = [{ "$match": { "timestamp": { "$gte": int(start), "$lte": int(end) } } },  { "$bucket": {"groupBy": f"${variable}", "boundaries": [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100],  "default": "outliers",  "output": { "count": { "$sum": 1 } }}}]
             result      = list(remotedb.ELET2415.climo.aggregate(pipeline))
         except Exception as e:
             msg = str(e)
